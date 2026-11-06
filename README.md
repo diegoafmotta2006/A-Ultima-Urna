@@ -1,10 +1,13 @@
 # A Última Urna
 
-Protótipo jogável de jogo de luta 2D feito em **Godot 4.7**, pensado para dois alvos
+Protótipo jogável de jogo de luta 2D feito em **Godot 4.7**, pensado para três alvos
 a partir de **um único código**:
 
-- **Web/desktop**: export HTML5 (roda no navegador).
+- **PC (Windows/Linux)**: export nativo — melhor desempenho, recomendado para jogar.
+- **Web**: export HTML5 (roda no navegador, bom para demo/vitrine).
 - **Android**: export APK/AAB nativo.
+
+Os três presets de exportação já vêm configurados em `export_presets.cfg`.
 
 Estado atual: partida local (2 jogadores no teclado/gamepad ou vs CPU), com barras de
 vida, rounds (melhor de 3), bloqueio, golpes leve/forte, hitstun, knockback e botões
@@ -73,6 +76,24 @@ const ATTACKS := {
 - Para virar frame data "de verdade", converta para contagem de frames e trave a lógica
   em `_physics_process` (já roda a 60 Hz).
 
+## Exportar para PC (Windows / Linux)
+
+Recomendado para jogar de verdade: roda nativo, sem Wasm nem download de engine pelo navegador.
+
+1. Instale os **Export Templates** de 4.7.x (**Editor > Gerenciar Templates de Exportação**).
+2. Os presets **Windows Desktop** e **Linux** já estão prontos no projeto.
+3. **Projeto > Exportar**, escolha o preset e clique em **Exportar Projeto**:
+   - Windows: `build/windows/A Ultima Urna.exe`
+   - Linux: `build/linux/a-ultima-urna.x86_64`
+4. O `.pck` é embutido no executável (`embed_pck=true`), então cada build é **um único arquivo**.
+
+Para gerar sem abrir a interface (depois de instalar os templates):
+
+```bash
+godot --headless --export-release "Windows Desktop" "build/windows/A Ultima Urna.exe"
+godot --headless --export-release "Linux" "build/linux/a-ultima-urna.x86_64"
+```
+
 ## Exportar para Web (navegador)
 
 1. Instale os Export Templates: **Editor > Gerenciar Templates de Exportação** (baixar/instalar).
@@ -98,13 +119,13 @@ Faça na sua máquina com Android SDK/JDK instalados (este ambiente não tem o S
    - `Java SDK Path` (JDK 17)
    - `Debug Keystore` (o Godot gera um keystore de debug se você preencher os campos)
 3. Instale os **Export Templates** da versão 4.7.2.
-4. **Projeto > Exportar > Adicionar > Android**:
-   - Defina o **Package Name** (ex.: `com.seunome.fightlab`).
-   - Escolha **APK** para testar rápido (ou AAB para publicar na Play Store).
+4. O preset **Android** já está no projeto. Confira:
+   - **Package Name** `com.diegoafmotta.ultimaurna`.
+   - **APK** para testar rápido (ou AAB para publicar na Play Store).
 5. Exporte e instale:
 
    ```bash
-   adb install -r build/android/fightlab.apk
+   adb install -r build/android/a-ultima-urna.apk
    ```
 
 Observações:
