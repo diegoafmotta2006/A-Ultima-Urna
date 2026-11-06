@@ -327,8 +327,7 @@ Detalhes completos no `README.md`.
 - **Commitar:** `project.godot`, `export_presets.cfg`, `scenes/`, `scripts/`,
   `README.md`, `PROJECT.md`, `.gitignore`.
 - **Não commitar:** `.godot/`, `build/`, export templates, `*.apk`, `*.aab`.
-- **Licença:** a definir. Sugestões: MIT (permissiva) ou GPL-3.0 (copyleft). Sem
-  decidir, deixe o repositório sem `LICENSE` por enquanto.
+- **Licença:** MIT (permissiva) — ver `LICENSE`.
 - Repositório: `https://github.com/diegoafmotta2006/A-Ultima-Urna`.
 
 ---

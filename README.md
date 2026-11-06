@@ -123,3 +123,7 @@ Observações:
   entra depois, e é bem mais complexo).
 - Para 2 jogadores no mesmo celular, o ideal é gamepad Bluetooth; os botões de toque
   atuais controlam só o P1.
+
+## Licença
+
+Distribuído sob a licença **MIT** — veja [`LICENSE`](LICENSE).
