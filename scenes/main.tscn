@@ -1,0 +1,60 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
+[ext_resource type="PackedScene" path="res://scenes/fighter.tscn" id="2_fighter"]
+[ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="3_hud"]
+
+[sub_resource type="RectangleShape2D" id="floor_shape"]
+size = Vector2(1280, 40)
+
+[sub_resource type="RectangleShape2D" id="wall_shape"]
+size = Vector2(40, 760)
+
+[node name="Main" type="Node2D"]
+script = ExtResource("1_game")
+
+[node name="Background" type="Node2D" parent="."]
+
+[node name="Sky" type="Polygon2D" parent="Background"]
+color = Color(0.09, 0.11, 0.16, 1)
+polygon = PackedVector2Array(0, 0, 1280, 0, 1280, 600, 0, 600)
+
+[node name="Ground" type="Polygon2D" parent="Background"]
+color = Color(0.16, 0.18, 0.24, 1)
+polygon = PackedVector2Array(0, 600, 1280, 600, 1280, 720, 0, 720)
+
+[node name="Floor" type="StaticBody2D" parent="."]
+position = Vector2(640, 620)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Floor"]
+shape = SubResource("floor_shape")
+
+[node name="WallLeft" type="StaticBody2D" parent="."]
+position = Vector2(20, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallLeft"]
+shape = SubResource("wall_shape")
+
+[node name="WallRight" type="StaticBody2D" parent="."]
+position = Vector2(1260, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="WallRight"]
+shape = SubResource("wall_shape")
+
+[node name="P1" parent="." instance=ExtResource("2_fighter")]
+position = Vector2(420, 600)
+player_id = 1
+body_color = Color(0.85, 0.28, 0.3, 1)
+
+[node name="P2" parent="." instance=ExtResource("2_fighter")]
+position = Vector2(860, 600)
+player_id = 2
+body_color = Color(0.32, 0.55, 0.95, 1)
+
+[node name="HUD" parent="." instance=ExtResource("3_hud")]

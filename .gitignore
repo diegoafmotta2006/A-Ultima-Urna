@@ -1,0 +1,11 @@
+# Godot
+.godot/
+*.translation
+
+# Builds de exportação
+build/
+export/
+*.apk
+*.aab
+*.pck
+*.zip
