@@ -5,7 +5,12 @@ extends Node2D
 const ROUNDS_TO_WIN := 2
 const P1_START := Vector2(420, 600)
 const P2_START := Vector2(860, 600)
-const MIN_SEPARATION := 54.0
+const MIN_SEPARATION := Fighter.BODY_HALF_WIDTH * 2.0 * Fighter.BODY_SCALE + 8.0
+const P1_ROSTER := [
+	{"id": "ryu", "art": "faixa", "label": "FAIXA", "color": Color(0.85, 0.28, 0.30)},
+	{"id": "ken", "art": "azul", "label": "AZUL", "color": Color(0.32, 0.55, 0.95)},
+	{"id": "presidente", "art": "presidente", "label": "PRESIDENTE", "color": Color(0.20, 0.34, 0.22)},
+]
 
 @onready var p1: Fighter = $P1
 @onready var p2: Fighter = $P2
@@ -14,15 +19,20 @@ const MIN_SEPARATION := 54.0
 var _wins := {1: 0, 2: 0}
 var _round_active := true
 var _match_over := false
+var _p1_index := 0
 
 func _ready() -> void:
 	p1.opponent = p2
 	p2.opponent = p1
 	p1.health_changed.connect(_on_health_changed.bind(1))
 	p2.health_changed.connect(_on_health_changed.bind(2))
+	p1.special_changed.connect(_on_special_changed.bind(1))
+	p2.special_changed.connect(_on_special_changed.bind(2))
 	p1.defeated.connect(_on_defeated)
 	p2.defeated.connect(_on_defeated)
 	hud.cpu_toggled.connect(_on_cpu_toggled)
+	hud.character_cycled.connect(_on_character_cycled)
+	hud.set_character_label(P1_ROSTER[_p1_index].label)
 	_reset_positions()
 	hud.update_round_wins(_wins[1], _wins[2])
 
@@ -49,6 +59,8 @@ func _separate_bodies() -> void:
 	p2.global_position.x += dir * push
 
 func _reset_positions() -> void:
+	for projectile in get_tree().get_nodes_in_group("projectiles"):
+		projectile.queue_free()
 	p1.reset_for_round(P1_START)
 	p2.reset_for_round(P2_START)
 	p1.facing = 1
@@ -57,9 +69,14 @@ func _reset_positions() -> void:
 	p2.update_facing()
 	hud.set_health(1, Fighter.MAX_HEALTH, Fighter.MAX_HEALTH)
 	hud.set_health(2, Fighter.MAX_HEALTH, Fighter.MAX_HEALTH)
+	hud.set_special(1, 0.0, Fighter.MAX_SPECIAL)
+	hud.set_special(2, 0.0, Fighter.MAX_SPECIAL)
 
 func _on_health_changed(current: int, maximum: int, player: int) -> void:
 	hud.set_health(player, current, maximum)
+
+func _on_special_changed(current: float, maximum: float, player: int) -> void:
+	hud.set_special(player, current, maximum)
 
 func _on_defeated(fighter: Fighter) -> void:
 	if not _round_active or _match_over:
@@ -93,6 +110,12 @@ func _full_reset() -> void:
 
 func _name_of(player: int) -> String:
 	return "P1" if player == 1 else "P2"
+
+func _on_character_cycled() -> void:
+	_p1_index = (_p1_index + 1) % P1_ROSTER.size()
+	var entry: Dictionary = P1_ROSTER[_p1_index]
+	p1.set_character(entry.id, entry.art, entry.color)
+	hud.set_character_label(entry.label)
 
 func _on_cpu_toggled(enabled: bool) -> void:
 	p2.ai_enabled = enabled

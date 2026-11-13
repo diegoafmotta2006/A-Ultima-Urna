@@ -11,8 +11,9 @@ Os três presets de exportação já vêm configurados em `export_presets.cfg`.
 
 Estado atual: partida local (2 jogadores no teclado/gamepad ou vs CPU), com barras de
 vida, rounds (melhor de 3), bloqueio, golpes leve/forte, hitstun, knockback, feedback de
-impacto (hitstop, flash e faísca) e botões de toque para Android. A arte ainda é feita
-com polígonos (placeholders) para o projeto rodar sem assets.
+impacto (hitstop, flash e faísca) e botões de toque para Android. A arte usa PNGs
+recortados das fotos por pose (`assets/characters/faixa` e `azul`); os polígonos
+continuam como fallback quando `art_set` está vazio.
 
 ## Requisitos
 
@@ -77,6 +78,24 @@ const ATTACKS := {
 - Para virar frame data "de verdade", converta para contagem de frames e trave a lógica
   em `_physics_process` (já roda a 60 Hz).
 
+## Física por personagem
+
+Os dados medidos de 25 lutadores do Street Fighter SNK (M.U.G.E.N) ficam em
+`data/characters.json` (valores brutos em px/tick). `scripts/character_db.gd`
+converte para o engine e `scripts/fighter.gd` aplica no `_ready()`.
+
+Cada instância de `Fighter` escolhe o personagem pelo campo `character_id`
+(ex.: `ryu`, `ken`, `sakura`, `chun_li`, `balrog`). Em `scenes/main.tscn` o P1 usa
+`ryu` e o P2 usa `ken`; para trocar, basta editar esse campo no editor ou na cena.
+
+```gdscript
+# no Fighter: walk_speed, jump_velocity, gravity, ground_friction, max_juggle...
+# saem do perfil, então dois personagens pulam/andam/caem de forma diferente.
+```
+
+Os arquivos originais extraídos (CSV, JSON, `MODELO-FISICA.md`, `FighterPhysics.cs`
+e a análise do Tekken) estão preservados em `data/source/`.
+
 ## Exportar para PC (Windows / Linux)
 
 Recomendado para jogar de verdade: roda nativo, sem Wasm nem download de engine pelo navegador.
@@ -138,7 +157,9 @@ Observações:
 
 ## Limitações atuais / próximos passos
 
-- Arte placeholder (polígonos) — trocar por `AnimatedSprite2D`/`Sprite2D` com spritesheet.
+- Sprites estáticos por pose já integrados (PNG recortado, origem nos pés); falta
+  animação/spritesheet, cenário e mais personagens.
+- Fatiador reprodutível em `tools/slice_poses.py` (usa as fotos de `assets/characters/referencia`).
 - Sem áudio ainda.
 - Sem golpes especiais por comando (motion inputs como ↓↘→ + golpe).
 - Sem multiplayer online (o plano combinado era local primeiro; netcode com rollback

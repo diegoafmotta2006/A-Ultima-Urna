@@ -1,0 +1,174 @@
+PROMPT PARA IA GERAR OS PERSONAGENS DE "A ÚLTIMA URNA"
+=====================================================
+Estilo: traço HD / line art vetorial (compatível com scripts/character_visual.gd)
+
+Como usar
+---------
+1. Junte de 3 a 6 fotos do rosto da pessoa: frontal, 3/4 esquerda, 3/4 direita,
+   de preferência com luz neutra, expressão neutra e sem óculos de sol/boné.
+   Use só fotos que você tem direito de usar.
+2. Troque tudo que está entre [COLCHETES].
+3. Gere UMA pose por vez (não peça a folha inteira de uma vez: a IA perde
+   consistência). Use a mesma seed / referência de personagem em todas.
+4. Resultado esperado: PNG de corpo inteiro, fundo transparente, virado para a
+   direita, pés na base da imagem. É esse formato que o jogo espera.
+
+
+=========================== VERSÃO PORTUGUÊS ===========================
+
+Você é um artista de character design de jogo de luta 2D. Gere UM personagem
+completo em estilo LINE ART HD / vetorial, para ser usado como sprite de jogo.
+
+REFERÊNCIA DE ROSTO (MUITO IMPORTANTE):
+Anexei [N] fotos de referência. Use o ROSTO delas como fonte de identidade:
+formato do rosto, olhos, sobrancelhas, nariz, boca, tom de pele, cabelo e
+barba. NÃO copie iluminação, roupa, pose ou fundo das fotos. Converta o rosto
+para o estilo de traço do jogo (contorno preto limpo, cor chapada, sombra
+suave em 1 ou 2 tons). O rosto precisa continuar reconhecível e IDÊNTICO em
+todas as poses.
+
+ESTILO:
+- Line art HD, contorno preto uniforme (~5 px), cantos arredondados.
+- Cores chapadas (cel shading), sombra mínima.
+- Estilo arcade de jogo de luta (Street Fighter / KOF), proporções heroicas
+  de aproximadamente 7,5 cabeças.
+- Sem cenário, sem texto, sem marca d'água, sem sombra no chão.
+
+ENQUADRAMENTO:
+- Corpo inteiro, em guarda, virado para a DIREITA.
+- Pés apoiados na base da imagem (o jogo usa a origem nos pés).
+- Mesma altura em pixels em todas as poses.
+
+PERSONAGEM:
+- Nome: [NOME]
+- Tipo físico: [ex.: atlético, alto e magro, forte e baixo]
+- Roupa: [ex.: gi de karatê branco com faixa preta, calça de luta]
+- Cores principais: [ex.: branco, preto, detalhes vermelhos]
+- Detalhes: [cicatriz, tattoo, cabelo preso, luvas, etc.]
+
+POSE DESTA GERAÇÃO: [ESCOLHA UMA]
+1. idle / guarda
+2. andando (passo)
+3. pulando
+4. soco leve (braço da frente estendido na horizontal)
+5. soco forte (corpo girado, braço estendido com força)
+6. launcher / uppercut (braço subindo)
+7. levando golpe (tronco para trás)
+8. bloqueio (braços cruzados na frente)
+9. knockdown (deitado no chão)
+10. KO (caído, derrotado)
+
+REGRAS DE CONSISTÊNCIA:
+- Mantenha rosto, cabelo, roupa, cores e proporção EXATAMENTE iguais entre poses.
+- Braços e pernas desenhados separados do tronco (para animação por rig).
+- Contorno fechado, sem linhas soltas.
+
+NEGATIVO (evitar):
+fotorrealismo, render 3D, sombra pesada, fundo, cenário, texto, marca d'água,
+membro extra, dedos deformados, rosto diferente da referência, roupa diferente,
+câmera inclinada, membros cortados, duas cabeças, estilo anime genérico.
+
+SAÍDA:
+PNG, fundo transparente, 1024x1536 (retrato, corpo inteiro) ou 1024x1024.
+
+
+========================= VERSÃO INGLÊS (recomendada) =========================
+
+You are a 2D fighting game character designer. Generate ONE full-body character
+in HD VECTOR LINE-ART style, ready to be used as a game sprite.
+
+FACE REFERENCE (CRITICAL):
+I attached [N] reference photos. Use the FACE as the identity source: face
+shape, eyes, eyebrows, nose, mouth, skin tone, hair and facial hair. Do NOT
+copy the lighting, clothing, pose or background of the photos. Convert the
+face into the game's line-art style (clean black outline, flat colors, soft
+1-2 tone shading). The face must stay recognizable and IDENTICAL across every
+pose.
+
+STYLE:
+- HD line art, uniform black outline (~5 px), rounded caps.
+- Flat colors / cel shading, minimal shading.
+- Arcade fighting game look (Street Fighter / KOF), heroic proportions,
+  about 7.5 heads tall.
+- No background, no text, no watermark, no drop shadow.
+
+FRAMING:
+- Full body, fighting stance, facing RIGHT.
+- Feet on the bottom edge of the image (game origin is at the feet).
+- Same pixel height across all poses.
+
+CHARACTER:
+- Name: [NAME]
+- Build: [e.g., athletic, tall and slim, short and strong]
+- Outfit: [e.g., white karate gi with black belt]
+- Main colors: [e.g., white, black, red accents]
+- Details: [scar, tattoo, tied hair, gloves, etc.]
+
+POSE FOR THIS GENERATION: [PICK ONE]
+1. idle / guard
+2. walking
+3. jumping
+4. light punch (front arm extended horizontally)
+5. heavy punch (torso rotated, arm fully extended)
+6. launcher / uppercut (arm swinging up)
+7. taking a hit (torso leaning back)
+8. blocking (arms crossed in front)
+9. knockdown (lying on the floor)
+10. KO (fallen, defeated)
+
+CONSISTENCY RULES:
+- Keep face, hair, outfit, colors and proportions EXACTLY the same.
+- Draw arms and legs separate from the torso (for rigging).
+- Closed silhouette, clean continuous lines.
+
+NEGATIVE PROMPT:
+photorealistic, 3D render, heavy shadows, background, scenery, text, watermark,
+extra limbs, deformed fingers, wrong face, different outfit, tilted camera,
+cropped limbs, two heads, generic anime style.
+
+OUTPUT:
+PNG, transparent background, 1024x1536 (portrait, full body) or 1024x1024.
+
+
+==================== PARÂMETROS POR FERRAMENTA ====================
+
+MIDJOURNEY
+  /imagine prompt: <PROMPT EM INGLÊS> --ar 2:3 --style raw --cref <URL das fotos> --cw 0 --seed <fixe um número>
+  - --cref = character reference (rosto/personagem).
+  - --cw 0 = usa só o rosto; --cw 100 = rosto + roupa. Para "rosto das fotos",
+    comece com --cw 0 e suba se precisar da roupa.
+  - --sref <URL> = referência de estilo (para o traço ficar igual entre poses).
+  - Repita a MESMA --seed e a MESMA --sref em todas as poses.
+
+LEONARDO.AI
+  - Ative "Character Reference" e envie as fotos.
+  - Use "Image Guidance" com força baixa/média (0.3-0.5) só para o rosto.
+  - Fixe o mesmo modelo/estilo e a mesma seed.
+
+IDEOGRAM
+  - Use o recurso "Character" e anexe as fotos.
+  - Peça "flat vector line art, transparent background".
+
+SCENARIO.GG / LAYER.AI
+  - Treine um "character/style" com as fotos e gere as poses no mesmo modelo.
+
+CHATGPT / GEMINI (DALL·E e Imagen)
+  - Anexe as fotos e cole o prompt. Peça explicitamente: "mantenha o mesmo
+    rosto das fotos e o mesmo traço em todas as imagens".
+
+STABLE DIFFUSION (local, precisa de GPU)
+  - IP-Adapter FaceID (identidade) + ControlNet OpenPose (pose) + um LoRA de
+    estilo line art.
+  - Para identidade muito fiel, treine um LoRA com 10-20 fotos do rosto
+    (Kohya / Scenario / Leonardo training) e use esse LoRA em todas as poses.
+
+
+==================== CHECKLIST ANTES DE MANDAR PRO JOGO ====================
+
+[ ] Fundo realmente transparente (PNG com alpha).
+[ ] Pés encostados na base da imagem.
+[ ] Personagem virado para a direita.
+[ ] Mesma altura em todas as poses.
+[ ] Rosto igual à referência e igual entre poses.
+[ ] Braços/pernas sem se fundir com o tronco.
+[ ] Sem texto, marca d'água ou sombra no chão.

@@ -39,7 +39,7 @@ como app Android, começando local e evoluindo (se fizer sentido) para online.
 | Fase | Objetivo | Estado |
 |------|----------|--------|
 | **M0 — Protótipo jogável** | Arena, 2 lutadores, golpes, dano, rounds, input, build Web | **Concluído** |
-| **M1 — Identidade visual e áudio** | Trocar polígonos por sprites animados, cenário, efeitos, sons | Próximo |
+| **M1 — Identidade visual e áudio** | Trocar polígonos por sprites animados, cenário, efeitos, sons | Em andamento |
 | **M2 — Profundidade de gameplay** | Especiais por comando, agachar, bloqueio alto/baixo, agarrão, combo, barra de especial | Pendente |
 | **M3 — Conteúdo** | 2+ personagens selecionáveis, seleção de personagem, telas de menu/resultado | Pendente |
 | **M4 — Polimento mobile** | Controles de toque melhores, PAUSE, performance, APK assinado, ícone/splash | Pendente |
@@ -253,7 +253,8 @@ Detalhes completos no `README.md`.
 
 ## 10. Limitações atuais / dívida técnica
 
-- Arte é **placeholder** (polígonos), sem sprites/animação.
+- Arte usa sprites PNG estáticos por pose (faixa/azul); falta animação/spritesheet e
+  cenário. Os polígonos permanecem como fallback quando `art_set` está vazio.
 - Sem áudio (o impacto tem hitstop, flash e faísca, mas nenhum som).
 - Hitbox/hurtbox por **AABB manual** (não `Area2D`); funciona, mas o ideal é migrar
   para `Area2D` + `CollisionShape2D` quando entrar arte/mais golpes.

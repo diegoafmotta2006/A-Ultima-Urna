@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/fighter.gd" id="1_fighter"]
+[ext_resource type="Script" path="res://scripts/character_visual.gd" id="2_visual"]
 
 [sub_resource type="RectangleShape2D" id="body_shape"]
 size = Vector2(46, 112)
@@ -15,11 +16,4 @@ position = Vector2(0, -56)
 shape = SubResource("body_shape")
 
 [node name="Body" type="Node2D" parent="."]
-
-[node name="Torso" type="Polygon2D" parent="Body"]
-color = Color(0.85, 0.28, 0.3, 1)
-polygon = PackedVector2Array(-16, 0, 16, 0, 18, -76, -18, -76)
-
-[node name="Head" type="Polygon2D" parent="Body"]
-color = Color(0.96, 0.8, 0.66, 1)
-polygon = PackedVector2Array(15, -91, 10.6, -80.4, 0, -76, -10.6, -80.4, -15, -91, -10.6, -101.6, 0, -106, 10.6, -101.6)
+script = ExtResource("2_visual")

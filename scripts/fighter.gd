@@ -9,17 +9,36 @@ class_name Fighter
 ## Sem sprites ainda: o corpo e desenhado com poligonos para o prototipo rodar.
 
 signal health_changed(current: int, maximum: int)
+signal special_changed(current: float, maximum: float)
 signal defeated(fighter: Fighter)
 
-const GRAVITY := FightPhysics.GRAVITY
-const WALK_SPEED := FightPhysics.WALK_FWD
-const WALK_BACK_SPEED := FightPhysics.WALK_BACK
-const JUMP_VELOCITY := FightPhysics.JUMP_VY
-const JUMP_FWD_SPEED := FightPhysics.JUMP_FWD
-const JUMP_BACK_SPEED := FightPhysics.JUMP_BACK
+const PROJECTILE_SCRIPT := preload("res://scripts/projectile.gd")
+
+## Movimento por personagem (carregado de data/characters.json em _ready).
+## Os valores abaixo sao apenas o fallback (Ryu '94) caso o perfil falte.
+var gravity := FightPhysics.GRAVITY
+var walk_speed := FightPhysics.WALK_FWD
+var walk_back_speed := FightPhysics.WALK_BACK
+var jump_velocity := FightPhysics.JUMP_VY
+var jump_fwd_speed := FightPhysics.JUMP_FWD
+var jump_back_speed := FightPhysics.JUMP_BACK
+var ground_friction := FightPhysics.GROUND_FRICTION
+var max_juggle := FightPhysics.MAX_JUGGLE
+var character_name := ""
+
 const MAX_HEALTH := 100
 const BODY_HALF_WIDTH := 23.0
 const BODY_HEIGHT := 112.0
+## Escala visual e de colisao dos personagens.
+## 480 px = dois tercos da altura da tela (viewport 720 px).
+const BODY_SCALE := 480.0 / BODY_HEIGHT
+
+## Barra de especial: enche batendo/levando dano e gasta no golpe especial.
+const MAX_SPECIAL := 100.0
+const SPECIAL_COST := 50.0
+const SPECIAL_GAIN_HIT := 12.0
+const SPECIAL_GAIN_BLOCKED := 6.0
+const SPECIAL_GAIN_TAKEN := 9.0
 
 ## Feedback de impacto: congelamento, flash e faisca (sem assets).
 const HIT_FLASH_TIME := 0.14
@@ -36,6 +55,10 @@ static var SPARK_SHAPE := PackedVector2Array([
 enum State { IDLE, WALK, JUMP, ATTACK, HIT, KO, AIR_HIT, WALL_SPLAT, KNOCKDOWN, GETUP }
 
 @export var player_id := 1
+## Id em data/characters.json (ex.: "ryu", "ken", "sakura"). Vazio = padrao.
+@export var character_id := ""
+## Pasta de arte em assets/characters/<art_set>/ (ex.: "faixa", "azul"). Vazio = poligonos.
+@export var art_set := ""
 @export var ai_enabled := false
 @export var body_color := Color(0.85, 0.28, 0.30)
 ## Peso do Tekken: leve (<1) voa mais alto, pesado (>1) cai antes.
@@ -43,13 +66,17 @@ enum State { IDLE, WALK, JUMP, ATTACK, HIT, KO, AIR_HIT, WALL_SPLAT, KNOCKDOWN, 
 
 var state: State = State.IDLE
 var health := MAX_HEALTH
+var special_energy := 0.0
 var facing := 1
 var opponent: Fighter
 var juggle_count := 0
 
 var _attack: Dictionary = {}
+var _attack_name := ""
 var _attack_elapsed := 0.0
 var _attack_hit := false
+var _attack_fired := false
+var _blocked_pose := false
 var _hitstun := 0.0
 var _hitstop := 0.0
 var _invuln := 0.0
@@ -64,22 +91,70 @@ var _getup_timer := 0.0
 var _prev_light := false
 var _prev_heavy := false
 var _prev_jump := false
+var _prev_special := false
 
 var _jump_edge := false
 var _light_edge := false
 var _heavy_edge := false
 var _launcher_edge := false
+var _special_edge := false
 
 var _ai_attack_cd := 0.0
 
 @onready var _body: Node2D = $Body
-@onready var _torso: Polygon2D = $Body/Torso
+@onready var _collision: CollisionShape2D = $CollisionShape2D
 
 func _ready() -> void:
+	_body.scale = Vector2(BODY_SCALE, BODY_SCALE)
+	_body.scale.x = facing * BODY_SCALE
+	_scale_collision()
+	_apply_character()
 	weight = clampf(weight, 0.75, 1.35)
-	_torso.color = body_color
+	if _body.has_method("set_primary_color"):
+		_body.set_primary_color(body_color)
+	if _body.has_method("set_art"):
+		_body.set_art(art_set)
 	_body.modulate = Color.WHITE
 	set_health(MAX_HEALTH)
+	special_changed.emit(special_energy, MAX_SPECIAL)
+
+func _scale_collision() -> void:
+	if _collision == null:
+		return
+	_collision.position = Vector2(0.0, -BODY_HEIGHT * 0.5 * BODY_SCALE)
+	var shape := _collision.shape as RectangleShape2D
+	if shape == null:
+		return
+	shape = shape.duplicate()
+	shape.size = Vector2(BODY_HALF_WIDTH * 2.0 * BODY_SCALE, BODY_HEIGHT * BODY_SCALE)
+	_collision.shape = shape
+
+func _apply_character() -> void:
+	var id := character_id if not character_id.is_empty() else CharacterDB.DEFAULT_ID
+	var profile := CharacterDB.get_profile(id)
+	if profile.is_empty():
+		push_error("Fighter: perfil de fisica '%s' nao encontrado" % id)
+		return
+	character_name = String(profile.name)
+	walk_speed = float(profile.walk_fwd)
+	walk_back_speed = float(profile.walk_back)
+	jump_velocity = float(profile.jump_vy)
+	jump_fwd_speed = float(profile.jump_fwd)
+	jump_back_speed = float(profile.jump_back)
+	gravity = float(profile.gravity)
+	ground_friction = float(profile.ground_friction)
+	max_juggle = float(profile.airjuggle)
+
+## Troca o personagem em tempo de jogo (id da fisica + pasta de arte + cor).
+func set_character(id: String, art: String, tint: Color) -> void:
+	character_id = id
+	art_set = art
+	body_color = tint
+	_apply_character()
+	if _body.has_method("set_primary_color"):
+		_body.set_primary_color(body_color)
+	if _body.has_method("set_art"):
+		_body.set_art(art_set)
 
 func set_health(value: int) -> void:
 	health = clampi(value, 0, MAX_HEALTH)
@@ -90,8 +165,11 @@ func reset_for_round(pos: Vector2) -> void:
 	velocity = Vector2.ZERO
 	state = State.IDLE
 	_attack = {}
+	_attack_name = ""
 	_attack_elapsed = 0.0
 	_attack_hit = false
+	_attack_fired = false
+	_blocked_pose = false
 	_hitstun = 0.0
 	_hitstop = 0.0
 	_invuln = 0.0
@@ -105,7 +183,17 @@ func reset_for_round(pos: Vector2) -> void:
 	if _flash_tween != null and _flash_tween.is_valid():
 		_flash_tween.kill()
 	_body.modulate = Color.WHITE
+	special_energy = 0.0
+	_prev_special = false
+	_special_edge = false
+	special_changed.emit(special_energy, MAX_SPECIAL)
 	set_health(MAX_HEALTH)
+
+func add_special(amount: float) -> void:
+	var before := special_energy
+	special_energy = clampf(special_energy + amount, 0.0, MAX_SPECIAL)
+	if not is_equal_approx(before, special_energy):
+		special_changed.emit(special_energy, MAX_SPECIAL)
 
 func update_facing() -> void:
 	if opponent == null:
@@ -113,10 +201,10 @@ func update_facing() -> void:
 	if state in [State.ATTACK, State.HIT, State.KO, State.AIR_HIT, State.WALL_SPLAT, State.KNOCKDOWN, State.GETUP]:
 		return
 	facing = 1 if opponent.global_position.x >= global_position.x else -1
-	_body.scale.x = facing
+	_body.scale.x = facing * BODY_SCALE
 
 func hurt_rect() -> Rect2:
-	return Rect2(global_position + Vector2(-BODY_HALF_WIDTH, -BODY_HEIGHT), Vector2(BODY_HALF_WIDTH * 2.0, BODY_HEIGHT))
+	return Rect2(global_position + Vector2(-BODY_HALF_WIDTH * BODY_SCALE, -BODY_HEIGHT * BODY_SCALE), Vector2(BODY_HALF_WIDTH * 2.0 * BODY_SCALE, BODY_HEIGHT * BODY_SCALE))
 
 func is_invulnerable() -> bool:
 	return _invuln > 0.0
@@ -138,7 +226,7 @@ func _physics_process(delta: float) -> void:
 		State.KO:
 			velocity.x = move_toward(velocity.x, 0.0, 1200.0 * delta)
 			if not is_on_floor():
-				velocity.y += GRAVITY * delta
+				velocity.y += gravity * delta
 			move_and_slide()
 			return
 
@@ -157,7 +245,7 @@ func _physics_process(delta: float) -> void:
 			if is_on_floor():
 				velocity.y = 0.0
 			else:
-				velocity.y += GRAVITY * delta
+				velocity.y += gravity * delta
 			move_and_slide()
 			if _knockdown_timer <= 0.0 and is_on_floor():
 				_enter_getup()
@@ -169,7 +257,7 @@ func _physics_process(delta: float) -> void:
 			if is_on_floor():
 				velocity.y = 0.0
 			else:
-				velocity.y += GRAVITY * delta
+				velocity.y += gravity * delta
 			move_and_slide()
 			if _getup_timer <= 0.0:
 				state = State.IDLE
@@ -178,11 +266,12 @@ func _physics_process(delta: float) -> void:
 		State.HIT:
 			_hitstun -= delta
 			if not is_on_floor():
-				velocity.y += GRAVITY * delta
-			velocity.x *= pow(FightPhysics.GROUND_FRICTION, 60.0 * delta)
+				velocity.y += gravity * delta
+			velocity.x *= pow(ground_friction, 60.0 * delta)
 			move_and_slide()
 			if _hitstun <= 0.0 and is_on_floor():
 				state = State.IDLE
+				_blocked_pose = false
 			return
 
 		State.AIR_HIT:
@@ -199,7 +288,7 @@ func _physics_process(delta: float) -> void:
 		State.ATTACK:
 			velocity.x = move_toward(velocity.x, 0.0, 2800.0 * delta)
 			if not is_on_floor():
-				velocity.y += GRAVITY * delta
+				velocity.y += gravity * delta
 			_advance_attack(delta)
 			move_and_slide()
 			return
@@ -209,19 +298,26 @@ func _physics_process(delta: float) -> void:
 
 	# ---------------------------------------------------------- livre
 	if not is_on_floor():
-		velocity.y += GRAVITY * delta
+		velocity.y += gravity * delta
 
 	var grounded := is_on_floor()
 
-	if grounded and _jump_edge:
-		velocity.y = JUMP_VELOCITY
+	if grounded and _special_edge and special_energy >= SPECIAL_COST:
+		add_special(-SPECIAL_COST)
+		_start_attack("special")
+	elif grounded and _jump_edge:
+		velocity.y = jump_velocity
 		velocity.x = _jump_horizontal()
 		state = State.JUMP
+	elif not grounded and (_light_edge or _heavy_edge):
+		_start_attack("air_heavy" if _heavy_edge else "air_light")
 	elif grounded and (_light_edge or _heavy_edge or _launcher_edge):
 		if _launcher_edge:
 			_start_attack("launcher")
 		elif _heavy_edge:
 			_start_attack("heavy")
+		elif _down_held:
+			_start_attack("crouch_light")
 		else:
 			_start_attack("light")
 	else:
@@ -239,23 +335,32 @@ func _apply_walk_speed() -> void:
 		return
 	# Andar "para tras" usa a velocidade de walk.back medida no MUGEN.
 	var going_back := signf(_move_dir) != float(facing)
-	velocity.x = _move_dir * (WALK_BACK_SPEED if going_back else WALK_SPEED)
+	velocity.x = _move_dir * (walk_back_speed if going_back else walk_speed)
 
 func _jump_horizontal() -> float:
 	if absf(_move_dir) <= 0.01:
 		return 0.0
 	if signf(_move_dir) == float(facing):
-		return float(facing) * JUMP_FWD_SPEED
-	return float(facing) * JUMP_BACK_SPEED
+		return float(facing) * jump_fwd_speed
+	return float(facing) * jump_back_speed
 
 func _start_attack(name: String) -> void:
 	if not FightPhysics.ATTACKS.has(name):
 		return
 	_attack = FightPhysics.ATTACKS[name].duplicate(true)
+	_attack.box = Vector2(_attack.box) * BODY_SCALE
+	_attack.offset = Vector2(_attack.offset) * BODY_SCALE
+	if _attack.has("projectile_radius"):
+		_attack.projectile_radius = float(_attack.projectile_radius) * BODY_SCALE
+	_attack_name = name
 	_attack_elapsed = 0.0
 	_attack_hit = false
+	_attack_fired = false
 	state = State.ATTACK
-	velocity.x = 0.0
+	if is_on_floor():
+		velocity.x = 0.0
+	if _attack.has("invuln"):
+		_invuln = maxf(_invuln, float(_attack.invuln))
 
 func _advance_attack(delta: float) -> void:
 	_attack_elapsed += delta
@@ -263,11 +368,24 @@ func _advance_attack(delta: float) -> void:
 	var active: float = _attack.active
 	var total: float = startup + active + float(_attack.recovery)
 	var in_active := _attack_elapsed >= startup and _attack_elapsed < startup + active
-	if in_active and not _attack_hit:
-		_try_hit()
+	if in_active and not _attack_fired:
+		if bool(_attack.get("projectile", false)):
+			_spawn_projectile()
+			_attack_fired = true
+		elif not _attack_hit:
+			_try_hit()
 	if _attack_elapsed >= total:
 		state = State.IDLE
 		_attack = {}
+		_attack_name = ""
+
+func _spawn_projectile() -> void:
+	var parent := get_parent()
+	if parent == null:
+		return
+	var projectile = PROJECTILE_SCRIPT.new()
+	projectile.setup(self, _attack, facing)
+	parent.add_child(projectile)
 
 func _attack_rect() -> Rect2:
 	if _attack.is_empty():
@@ -286,6 +404,7 @@ func _try_hit() -> void:
 	_attack_hit = true
 	var blocked := opponent.is_blocking()
 	opponent.receive_hit(_attack, facing)
+	add_special(SPECIAL_GAIN_HIT)
 
 	var stop: float = _attack.get("hitstop", 0.0)
 	if stop > 0.0:
@@ -310,6 +429,7 @@ func receive_hit(atk: Dictionary, from_facing: int) -> void:
 		return
 
 	var blocked := is_blocking()
+	_blocked_pose = blocked
 	var damage: int = int(atk.damage)
 	var w := maxf(weight, 0.75)
 
@@ -326,7 +446,7 @@ func receive_hit(atk: Dictionary, from_facing: int) -> void:
 			# Tekken: launch + juggle com dano decrescente (damage_adjust_aircombo).
 			juggle_count += 1
 			var scale := pow(FightPhysics.JUGGLE_DAMAGE_DECAY, maxf(0.0, float(juggle_count - 1)))
-			if juggle_count > int(FightPhysics.MAX_JUGGLE):
+			if juggle_count > int(max_juggle):
 				scale *= 0.5
 			damage = maxi(1, int(round(damage * scale)))
 			var lift := float(atk.air_knock.y)
@@ -345,6 +465,7 @@ func receive_hit(atk: Dictionary, from_facing: int) -> void:
 			_flash(HIT_FLASH_COLOR)
 
 	set_health(health - damage)
+	add_special(SPECIAL_GAIN_BLOCKED if blocked else SPECIAL_GAIN_TAKEN)
 	if health <= 0:
 		state = State.KO
 		defeated.emit(self)
@@ -379,6 +500,7 @@ func _read_input() -> void:
 	_light_edge = false
 	_heavy_edge = false
 	_launcher_edge = false
+	_special_edge = false
 
 	if ai_enabled:
 		var ai := _ai_input(get_physics_process_delta_time())
@@ -396,13 +518,16 @@ func _read_input() -> void:
 		var jump_now := InputBridge.held(player_id, "jump")
 		var light_now := InputBridge.held(player_id, "light")
 		var heavy_now := InputBridge.held(player_id, "heavy")
+		var special_now := InputBridge.held(player_id, "special")
 		_jump_edge = jump_now and not _prev_jump
 		_light_edge = light_now and not _prev_light
 		_heavy_edge = heavy_now and not _prev_heavy
+		_special_edge = special_now and not _prev_special
 		_launcher_edge = _heavy_edge and _down_held
 		_prev_jump = jump_now
 		_prev_light = light_now
 		_prev_heavy = heavy_now
+		_prev_special = special_now
 
 	_move_dir = move
 

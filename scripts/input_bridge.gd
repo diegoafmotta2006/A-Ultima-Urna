@@ -4,13 +4,13 @@ extends Node
 ## Os lutadores consultam apenas held(); a detecção de "acabou de pressionar" fica neles.
 
 const KEYS := {
-	1: {"left": KEY_A, "right": KEY_D, "down": KEY_S, "jump": KEY_W, "light": KEY_F, "heavy": KEY_G},
-	2: {"left": KEY_LEFT, "right": KEY_RIGHT, "down": KEY_DOWN, "jump": KEY_UP, "light": KEY_K, "heavy": KEY_L},
+	1: {"left": KEY_A, "right": KEY_D, "down": KEY_S, "jump": KEY_W, "light": KEY_F, "heavy": KEY_G, "special": KEY_H},
+	2: {"left": KEY_LEFT, "right": KEY_RIGHT, "down": KEY_DOWN, "jump": KEY_UP, "light": KEY_K, "heavy": KEY_L, "special": KEY_SEMICOLON},
 }
 
 var _virtual: Dictionary = {
-	1: {"left": false, "right": false, "down": false, "jump": false, "light": false, "heavy": false},
-	2: {"left": false, "right": false, "down": false, "jump": false, "light": false, "heavy": false},
+	1: {"left": false, "right": false, "down": false, "jump": false, "light": false, "heavy": false, "special": false},
+	2: {"left": false, "right": false, "down": false, "jump": false, "light": false, "heavy": false, "special": false},
 }
 
 func set_virtual(player: int, action: String, pressed: bool) -> void:
@@ -45,4 +45,6 @@ func _gamepad_held(player: int, action: String) -> bool:
 			return Input.is_joy_button_pressed(dev, JOY_BUTTON_X)
 		"heavy":
 			return Input.is_joy_button_pressed(dev, JOY_BUTTON_Y)
+		"special":
+			return Input.is_joy_button_pressed(dev, JOY_BUTTON_B)
 	return false

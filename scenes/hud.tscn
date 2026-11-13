@@ -42,6 +42,38 @@ offset_bottom = 26.0
 mouse_filter = 2
 color = Color(0.32, 0.55, 0.95, 1)
 
+[node name="P1SpecialBG" type="ColorRect" parent="Root"]
+offset_left = 40.0
+offset_top = 62.0
+offset_right = 520.0
+offset_bottom = 72.0
+mouse_filter = 2
+color = Color(0.12, 0.12, 0.14, 0.9)
+
+[node name="P1SpecialFill" type="ColorRect" parent="Root/P1SpecialBG"]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 478.0
+offset_bottom = 8.0
+mouse_filter = 2
+color = Color(0.45, 0.82, 1, 1)
+
+[node name="P2SpecialBG" type="ColorRect" parent="Root"]
+offset_left = 760.0
+offset_top = 62.0
+offset_right = 1240.0
+offset_bottom = 72.0
+mouse_filter = 2
+color = Color(0.12, 0.12, 0.14, 0.9)
+
+[node name="P2SpecialFill" type="ColorRect" parent="Root/P2SpecialBG"]
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 478.0
+offset_bottom = 8.0
+mouse_filter = 2
+color = Color(0.45, 0.82, 1, 1)
+
 [node name="P1Name" type="Label" parent="Root"]
 offset_left = 40.0
 offset_top = 2.0
@@ -82,9 +114,18 @@ offset_top = 686.0
 offset_right = 1280.0
 offset_bottom = 714.0
 theme_override_font_sizes/font_size = 16
-text = "P1: A/D mover  W pular  F leve  G forte      |      P2: ←/→ mover  ↑ pular  K leve  L forte"
+text = "P1: A/D mover  W pular  S agachar  F leve  G forte  H especial      |      P2: ←/→ mover  ↑ pular  K leve  L forte  ; especial"
 horizontal_alignment = 1
 modulate = Color(1, 1, 1, 0.55)
+
+[node name="P1CharButton" type="Button" parent="Root"]
+offset_left = 250.0
+offset_top = 76.0
+offset_right = 470.0
+offset_bottom = 108.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "P1: FAIXA"
 
 [node name="CpuButton" type="Button" parent="Root"]
 offset_left = 40.0
@@ -94,6 +135,15 @@ offset_bottom = 102.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 text = "CPU: OFF"
+
+[node name="TouchSpecial" type="Button" parent="Root"]
+offset_left = 880.0
+offset_top = 490.0
+offset_right = 1000.0
+offset_bottom = 570.0
+focus_mode = 0
+theme_override_font_sizes/font_size = 18
+text = "SPECIAL"
 
 [node name="TouchLeft" type="Button" parent="Root"]
 offset_left = 40.0

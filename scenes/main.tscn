@@ -50,11 +50,15 @@ shape = SubResource("wall_shape")
 [node name="P1" parent="." instance=ExtResource("2_fighter")]
 position = Vector2(420, 600)
 player_id = 1
+character_id = "ryu"
+art_set = "faixa"
 body_color = Color(0.85, 0.28, 0.3, 1)
 
 [node name="P2" parent="." instance=ExtResource("2_fighter")]
 position = Vector2(860, 600)
 player_id = 2
+character_id = "ken"
+art_set = "azul"
 body_color = Color(0.32, 0.55, 0.95, 1)
 
 [node name="HUD" parent="." instance=ExtResource("3_hud")]
