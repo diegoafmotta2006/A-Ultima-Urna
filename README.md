@@ -10,10 +10,29 @@ a partir de **um único código**:
 Os três presets de exportação já vêm configurados em `export_presets.cfg`.
 
 Estado atual: partida local (2 jogadores no teclado/gamepad ou vs CPU), com barras de
-vida, rounds (melhor de 3), bloqueio, golpes leve/forte, hitstun, knockback, feedback de
-impacto (hitstop, flash e faísca) e botões de toque para Android. A arte usa PNGs
-recortados das fotos por pose (`assets/characters/faixa` e `azul`); os polígonos
-continuam como fallback quando `art_set` está vazio.
+vida, rounds (melhor de 3), agachar, bloqueio, golpes leve/forte/especial, hitstun,
+knockback, feedback de impacto (hitstop, flash e faísca) e botões de toque para Android.
+
+> **Novidade (13/11/2026):** elenco corrigido para **dois** lutadores — **LULA** e
+> **BOLSONARO** — e pose repetida resolvida. Detalhes em [`MUDANCAS.md`](MUDANCAS.md).
+
+## Personagens
+
+O jogo tem **dois** personagens:
+
+| Lutador | Pasta de arte | Aparece como |
+|---------|---------------|--------------|
+| **BOLSONARO** | `assets/characters/faixa` | P1 (padrão) |
+| **LULA** | `assets/characters/azul` | P2 (padrão) |
+
+- O botão **`P1: BOLSONARO`** no canto superior esquerdo alterna o P1 entre os dois;
+  o nome atualizado também aparece no rótulo `P1 - ...`.
+- Cada lutador tem 11 poses em PNG (`idle`, `walk`, `jump`, `light`, `heavy`,
+  `launcher`, `special`, `hit`, `block`, `knockdown`, `ko`), recortadas das fotos em
+  `assets/characters/referencia` e ancoradas nos pés. Os polígonos continuam como
+  fallback quando `art_set` está vazio.
+- A física de cada um vem de `data/characters.json` (perfis `ryu` para o P1 e `ken`
+  para o P2); a pasta de arte define só a aparência.
 
 ## Requisitos
 
@@ -28,16 +47,21 @@ e rode com **F5**. Cena principal: `scenes/main.tscn`.
 
 ## Controles
 
-| Ação        | Player 1        | Player 2        |
-|-------------|-----------------|-----------------|
-| Mover       | `A` / `D`       | `←` / `→`       |
-| Pular       | `W`             | `↑`             |
-| Golpe leve  | `F`             | `K`             |
-| Golpe forte | `G`             | `L`             |
+| Ação         | Player 1        | Player 2        |
+|--------------|-----------------|-----------------|
+| Mover        | `A` / `D`       | `←` / `→`       |
+| Agachar      | `S`             | `↓`             |
+| Pular        | `W`             | `↑`             |
+| Golpe leve   | `F`             | `K`             |
+| Golpe forte  | `G`             | `L`             |
+| Especial¹    | `H`             | `;`             |
+| Trocar P1    | botão `P1: ...` | —               |
+
+¹ Especial gasta barra de energia e dispara um projetil.
 
 - **Bloqueio**: segure a direção oposta ao oponente (para trás) enquanto está no chão.
-- **Gamepad**: P1 = controle 0, P2 = controle 1. Analógico/DPad move, `A` pula,
-  `X` leve, `Y` forte.
+- **Gamepad**: P1 = controle 0, P2 = controle 1. Analógico/DPad move e agacha,
+  `A` pula, `X` leve, `Y` forte, `B` especial.
 - **CPU**: botão `CPU: OFF/ON` no canto superior esquerdo liga a IA no P2.
 - **Toque (Android/móvel)**: os botões aparecem automaticamente quando há touchscreen;
   controlam o P1.
@@ -47,26 +71,36 @@ e rode com **F5**. Cena principal: `scenes/main.tscn`.
 ```
 project.godot            configuração (viewport 1280x720, física 60 Hz, autoload)
 scenes/
-  main.tscn              arena + chão/paredes + jogadores + HUD
+  main.tscn              arena + chão/paredes + jogadores (P1 faixa, P2 azul) + HUD
   fighter.tscn           lutador (corpo, colisão, polígonos)
-  hud.tscn               barras de vida, placar, CPU, botões de toque
+  hud.tscn               barras de vida, placar, nomes, CPU, botões de toque
 scripts/
-  game.gd                rounds, placar, posicionamento, separação de corpos
+  game.gd                rounds, placar, elenco do P1, posicionamento, separação
   fighter.gd             máquina de estados, física, ataques, hitboxes/hurtbox, IA
+  fight_physics.gd       constantes compartilhadas: ATTACKS, juggle, wall splat
+  character_visual.gd    rig de polígonos + sprites por pose (assets/characters)
+  character_db.gd        perfis de física carregados de data/characters.json
   hud.gd                 atualização de HUD e input dos botões de toque
   input_bridge.gd        input unificado: teclado + gamepad + toque
+  projectile.gd          projetil do golpe especial
+tools/
+  slice_poses.py         fatia as fotos de referencia/ nas poses
+  make_faixa_special.py  gera a pose `special` do Bolsonaro
+MUDANCAS.md              o que mudou em cada atualização
 ```
 
 ## Ajustar o jogo de luta
 
-Os dados de golpe ficam em `scripts/fighter.gd` na constante `ATTACKS`:
+Os dados de golpe ficam em `scripts/fight_physics.gd` na constante `ATTACKS`
+(consultada por `scripts/fighter.gd`):
 
 ```gdscript
+# scripts/fight_physics.gd
 const ATTACKS := {
-    "light": { "startup": 0.055, "active": 0.070, "recovery": 0.130,
+    "light": { "startup": 0.050, "active": 0.067, "recovery": 0.133,
                "damage": 6, "box": Vector2(64, 34), "offset": Vector2(42, -62),
-               "knock": Vector2(170, -60), "hitstun": 0.22, "hitstop": 0.05 },
-    # ...
+               "knock": Vector2(336, 0), "hitstun": 0.2, "hitstop": 0.10 },
+    # "heavy", "launcher", "crouch_light", "air_light", "air_heavy", "special"...
 }
 ```
 
@@ -158,7 +192,9 @@ Observações:
 ## Limitações atuais / próximos passos
 
 - Sprites estáticos por pose já integrados (PNG recortado, origem nos pés); falta
-  animação/spritesheet, cenário e mais personagens.
+  animação/spritesheet e cenário. Para acrescentar um terceiro lutador: nova pasta em
+  `assets/characters/<nome>` com as 11 poses + uma entrada em `P1_ROSTER`
+  (`scripts/game.gd`).
 - Fatiador reprodutível em `tools/slice_poses.py` (usa as fotos de `assets/characters/referencia`).
 - Sem áudio ainda.
 - Sem golpes especiais por comando (motion inputs como ↓↘→ + golpe).
@@ -166,6 +202,11 @@ Observações:
   entra depois, e é bem mais complexo).
 - Para 2 jogadores no mesmo celular, o ideal é gamepad Bluetooth; os botões de toque
   atuais controlam só o P1.
+
+## Histórico de mudanças
+
+Cada atualização está descrita em [`MUDANCAS.md`](MUDANCAS.md) — incluindo a correção
+do elenco (2 personagens: LULA e BOLSONARO) e das poses repetidas.
 
 ## Licença
 

@@ -80,7 +80,7 @@ offset_top = 2.0
 offset_right = 300.0
 offset_bottom = 28.0
 theme_override_font_sizes/font_size = 20
-text = "PLAYER 1"
+text = "P1 - BOLSONARO"
 
 [node name="P2Name" type="Label" parent="Root"]
 offset_left = 980.0
@@ -88,7 +88,7 @@ offset_top = 2.0
 offset_right = 1240.0
 offset_bottom = 28.0
 theme_override_font_sizes/font_size = 20
-text = "PLAYER 2"
+text = "P2 - LULA"
 horizontal_alignment = 2
 
 [node name="RoundLabel" type="Label" parent="Root"]
@@ -125,7 +125,7 @@ offset_right = 470.0
 offset_bottom = 108.0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
-text = "P1: FAIXA"
+text = "P1: BOLSONARO"
 
 [node name="CpuButton" type="Button" parent="Root"]
 offset_left = 40.0

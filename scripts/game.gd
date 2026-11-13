@@ -6,10 +6,11 @@ const ROUNDS_TO_WIN := 2
 const P1_START := Vector2(420, 600)
 const P2_START := Vector2(860, 600)
 const MIN_SEPARATION := Fighter.BODY_HALF_WIDTH * 2.0 * Fighter.BODY_SCALE + 8.0
+## Elenco do P1: dois lutadores. A pasta de arte define quem aparece na tela
+## ("faixa" = Bolsonaro, "azul" = Lula).
 const P1_ROSTER := [
-	{"id": "ryu", "art": "faixa", "label": "FAIXA", "color": Color(0.85, 0.28, 0.30)},
-	{"id": "ken", "art": "azul", "label": "AZUL", "color": Color(0.32, 0.55, 0.95)},
-	{"id": "presidente", "art": "presidente", "label": "PRESIDENTE", "color": Color(0.20, 0.34, 0.22)},
+	{"id": "ryu", "art": "faixa", "label": "BOLSONARO", "color": Color(0.85, 0.28, 0.30)},
+	{"id": "ken", "art": "azul", "label": "LULA", "color": Color(0.32, 0.55, 0.95)},
 ]
 
 @onready var p1: Fighter = $P1
